@@ -15,7 +15,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 var port = process.env.PORT || 8080;        // set our port
-var url = port == 8080 ? `http://localhost:3000/` : `https://ntusers-tjak.herokuapp.com/`
+var url = port == 8080 ? `http://localhost:3000/` : `https://nttweets-tjak.herokuapp.com/`
 
 // ROUTES FOR OUR API
 // =============================================================================
