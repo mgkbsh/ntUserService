@@ -15,6 +15,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 var port = process.env.PORT || 8080;        // set our port
+var url = port == 8080 ? `http://localhost:3000/` : `https://ntusers-tjak.herokuapp.com/`
 
 // ROUTES FOR OUR API
 // =============================================================================
@@ -22,7 +23,7 @@ var router = express.Router();              // get an instance of the express Ro
 
 // test route to make sure everything is working (accessed at GET http://localhost:8080/api)
 router.get('/', function(req, res) {
-  axios.get(`http://localhost:3000/`)
+  axios.get(url)
   .then(response => {
     res.send(response.data);
   })
