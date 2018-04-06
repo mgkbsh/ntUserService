@@ -1,44 +1,26 @@
-// server.js
+const express = require('express');
+const app = express();
+const port = process.env.PORT || 1234;
 
-// BASE SETUP
-// =============================================================================
-
-// call the packages we need
-var express    = require('express');        // call express
-var app        = express();                 // define our app using express
-var bodyParser = require('body-parser');
-var axios = require('axios')
-
-// configure app to use bodyParser()
-// this will let us get the data from a POST
-app.use(bodyParser.urlencoded({ extended: true }));
+/* ===========BODY_PARSER=========== */
+const bodyParser = require('body-parser');
+// Parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+// Parse application/json
 app.use(bodyParser.json());
+// Parse application/vnd.api+json as json
+app.use(bodyParser.json({ type: 'application/vnd.api+json' }));
 
-var port = process.env.PORT || 8080;        // set our port
-var url = port == 8080 ? `http://localhost:3000/` : `https://nttweets-tjak.herokuapp.com/`
+/* =============ROUTES============= */
+const user = require('./controllers/users')
+const router = express.Router();
 
-// ROUTES FOR OUR API
-// =============================================================================
-var router = express.Router();              // get an instance of the express Router
+router.post('/follow', user.follow);
+router.post('/unfollow', user.unfollow);
+router.get('/followers', user.getFollowers);
+router.get('/followees', user.getFollowees);
+router.get('/user', user.getUser);
 
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-router.get('/', function(req, res) {
-  axios.get(url)
-  .then(response => {
-    res.send(response.data);
-  })
-  .catch(error => {
-    res.send(error);
-  });
-});
-
-// more routes for our API will happen here
-
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
 app.use('/', router);
 
-// START THE SERVER
-// =============================================================================
 app.listen(port);
-console.log('Magic happens on port ' + port);
