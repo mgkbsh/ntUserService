@@ -21,9 +21,7 @@ module.exports.follow = async (req, res) => {
         { numFollowees: sequelize.literal(`"Users"."numFollowees" + 1`) },
         { where: { id: follower } });
 
-    var [followers, followees] = await sequelize.Promise.join(
-      incFollowers, incFollowees
-    )
+    await sequelize.Promise.join(incFollowers, incFollowees)
 
   } catch (err) {
 
