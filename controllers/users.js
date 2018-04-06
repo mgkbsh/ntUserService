@@ -2,12 +2,12 @@ const models = require('../models');
 const sequelize = require('sequelize');
 
 module.exports.follow = async (req, res) => {
-  res.status(200).send('success');
-
-  var follower = req.query.followerId;
-  var followee = req.query.followeeId;
-
   try {
+    res.status(200).send('success');
+
+    var follower = req.body.followerId;
+    var followee = req.body.followeeId;
+
     var follow = await models.Relationship.create({
       followerId: follower,
       followeeId: followee
@@ -29,12 +29,12 @@ module.exports.follow = async (req, res) => {
 };
 
 module.exports.unfollow = async (req, res) => {
-  res.status(200).send('success')
-
-  var follower = req.query.followerId;
-  var followee = req.query.followeeId;
-
   try {
+    res.status(200).send('success');
+
+    var follower = req.body.followerId;
+    var followee = req.body.followeeId;
+
     var relationships = await models.Relationship.destroy({
        where: {
          followerId: follower,
@@ -42,7 +42,7 @@ module.exports.unfollow = async (req, res) => {
        }
     });
 
-    if (relationships >= 0) {
+    if (relationships <= 0) {
       throw new Error("Non-existent relationship");
     }
 
@@ -71,12 +71,12 @@ module.exports.unfollow = async (req, res) => {
 //     "numTweets": 16
 // }
 module.exports.getUser = async (req, res) => {
-  var id = req.query.id
-
   try {
+    var id = req.body.id;
+
     var user = await models.User.findOne({
       where: { id: id },
-      attributes: ['fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
+      attributes: ['id', 'username', 'fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
     })
 
     res.json(user);
@@ -100,15 +100,15 @@ module.exports.getUser = async (req, res) => {
 //     }
 // ]
 module.exports.getFollowers = async (req, res) => {
-  var id = req.query.id;
-
   try {
+    var id = req.body.id;
+
     var followers = await models.Relationship.findAll({
       where: { followeeId: id },
       include: [{
         model: models.User,
         as: 'follower',
-        attributes: ['username', 'fname', 'lname']
+        attributes: ['id', 'username', 'fname', 'lname']
       }],
       attributes: ['createdAt']
     });
@@ -126,7 +126,7 @@ module.exports.getFollowers = async (req, res) => {
 // [
 //     {
 //         "createdAt": "2018-04-04T20:03:41.962Z",
-//         "follower": {
+//         "followee": {
 //             "fullName": "hey hey",
 //             "username": "hey",
 //             "fname": "hey",
@@ -135,15 +135,15 @@ module.exports.getFollowers = async (req, res) => {
 //     }
 // ]
 module.exports.getFollowees = async (req, res) => {
-  var id = req.query.id;
-
   try {
+    var id = req.body.id;
+
     var followees = await models.Relationship.findAll({
       where: { followerId: id },
       include: [{
         model: models.User,
-        as: 'follower',
-        attributes: ['username', 'fname', 'lname']
+        as: 'followee',
+        attributes: ['id', 'username', 'fname', 'lname']
       }],
       attributes: ['createdAt']
     });
