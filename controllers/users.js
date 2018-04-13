@@ -1,10 +1,11 @@
 const models = require('../models');
 const sequelize = require('sequelize');
-
+var axios = require('axios')
+var config=require('../config/config.json')
+var cacheURL = "http://localhost:2000/"
 module.exports.follow = async (req, res) => {
   try {
     res.status(200).send('success');
-
     var follower = req.body.followerId;
     var followee = req.body.followeeId;
 
@@ -71,17 +72,37 @@ module.exports.unfollow = async (req, res) => {
 //     "numTweets": 16
 // }
 module.exports.getUser = async (req, res) => {
+  var id = req.body.id
+  var userCacheKey="userObj"+id.toString();
+  var getRequestURL=cacheURL+userCacheKey
+  var postURL=cacheURL+'store/'+userCacheKey
   try {
-    var id = req.body.id;
+    axios.get(getRequestURL).then(async function (response) {
+        var result=JSON.parse(JSON.stringify(response.data))
+        if (result==null) {
+          // data doesnt exists, will need to get from db and set in cache
+          var user = await models.User.findOne({
+            where: { id: id },
+            attributes: ['id', 'username', 'fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
+          });
+          res.json(user)
+          var storeData=JSON.stringify(user);
 
-    var user = await models.User.findOne({
-      where: { id: id },
-      attributes: ['id', 'username', 'fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
-    })
-
-    res.json(user);
-
+          axios.post(postURL,  {params: { cacheKey: userCacheKey, cacheData: storeData}})
+          .then(function(postResponse){
+          }).catch(function(err){
+            console.log(err)
+            res.send(err);
+          });
+        } else {
+          // data exists in cache, will get from cache
+          res.json(JSON.parse(result));
+        }
+      }).catch(function (error) {
+        console.log(error);
+      });
   } catch (err) {
+    // console.log(err)
     res.status(404).send(err);
   }
 };

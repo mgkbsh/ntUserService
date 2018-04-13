@@ -5,12 +5,15 @@
     "database": "ntdev",
     "host": "localhost",
     "dialect": "postgres",
-    "tweet_service": "http://localhost:4567/"
+    "tweet_service": "http://localhost:4567/",
+    "cache_service": "http://localhost:2000/"
+
   },
   "production": {
     "use_env_variable": "DATABASE_URL",
     "dialect": "postgres",
-    "tweet_service": "https://nttweets-tjak.herokuapp.com/"
+    "tweet_service": "https://nttweets-tjak.herokuapp.com/",
+    "cache_service": "https://nt-cache.herokuapp.com/"
   },
   "test": {
     "username": "",
