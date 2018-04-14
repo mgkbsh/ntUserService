@@ -77,30 +77,21 @@ module.exports.getUser = async (req, res) => {
   var getRequestURL=cacheURL+userCacheKey
   var postURL=cacheURL+'store/'+userCacheKey
   try {
-    axios.get(getRequestURL).then(async function (response) {
-        var result=JSON.parse(JSON.stringify(response.data))
-        if (result==null) {
-          // data doesnt exists, will need to get from db and set in cache
-          var user = await models.User.findOne({
-            where: { id: id },
-            attributes: ['id', 'username', 'fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
-          });
-          res.json(user)
-          var storeData=JSON.stringify(user);
 
-          axios.post(postURL,  {params: { cacheKey: userCacheKey, cacheData: storeData}})
-          .then(function(postResponse){
-          }).catch(function(err){
-            console.log(err)
-            res.send(err);
-          });
-        } else {
-          // data exists in cache, will get from cache
-          res.json(JSON.parse(result));
-        }
-      }).catch(function (error) {
-        console.log(error);
+    var response=await axios.get(getRequestURL);
+    var result=JSON.parse(JSON.stringify(response.data))
+    if (result==null) {
+      // data doesnt exists, will need to get from db and set in cache
+      var user = await models.User.findOne({
+        where: { id: id },
+        attributes: ['id', 'username', 'fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
       });
+      res.json(user)
+      axios.post(postURL, {params: { cacheKey: userCacheKey, cacheData: JSON.stringify(user)}})
+    } else {
+      // data exists in cache, will get from cache
+      res.json(JSON.parse(result));
+    }
   } catch (err) {
     // console.log(err)
     res.status(404).send(err);
@@ -154,7 +145,7 @@ module.exports.getFollowers = async (req, res) => {
 //             "lname": "hey"
 //         }
 //     }
-// ]
+// ]a
 module.exports.getFollowees = async (req, res) => {
   try {
     var id = req.body.id;
