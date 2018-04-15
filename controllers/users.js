@@ -88,6 +88,7 @@ module.exports.getUser = async (req, res) => {
         where: { id: id },
         attributes: ['id', 'username', 'fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
       });
+      console.log(user)
       res.json(JSON.parse(JSON.stringify(user)));
       axios.post(postURL, {params: { cacheKey: userCacheKey, cacheData: JSON.stringify(user)}})
     } else {
