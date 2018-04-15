@@ -74,26 +74,29 @@ module.exports.unfollow = async (req, res) => {
 //     "numTweets": 16
 // }
 module.exports.getUser = async (req, res) => {
-  var id = req.body.id
+  var id = 6
+  console.log(id)
   var userCacheKey="userObj"+id.toString();
   var getRequestURL=cacheURL+userCacheKey
   var postURL=cacheURL+'store/'+userCacheKey
   try {
-
     var response=await axios.get(getRequestURL);
-    var result=JSON.parse(JSON.stringify(response.data))
+    var result=JSON.parse(response.data)
     if (result==null) {
       // data doesnt exists, will need to get from db and set in cache
       var user = await models.User.findOne({
         where: { id: id },
         attributes: ['id', 'username', 'fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
       });
-      console.log(user)
+      console.log(JSON.parse(JSON.stringify(user)))
       res.json(JSON.parse(JSON.stringify(user)));
       axios.post(postURL, {params: { cacheKey: userCacheKey, cacheData: JSON.stringify(user)}})
     } else {
+      console.log(result)
+
+
       // data exists in cache, will get from cache
-      res.json(JSON.parse(result));
+      res.json(result);
     }
   } catch (err) {
     // console.log(err)
