@@ -74,7 +74,7 @@ module.exports.unfollow = async (req, res) => {
 //     "numTweets": 16
 // }
 module.exports.getUser = async (req, res) => {
-  var id = 6
+  var id = req.body.id
   console.log(id)
   var userCacheKey="userObj"+id.toString();
   var getRequestURL=cacheURL+userCacheKey
