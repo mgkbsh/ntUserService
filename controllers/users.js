@@ -1,7 +1,5 @@
-var env = process.env.NODE_ENV || 'development';
-if(env=='production') {
-  require('newrelic')
-}
+require('newrelic')
+
 const models = require('../models');
 const sequelize = require('sequelize');
 var axios = require('axios')
