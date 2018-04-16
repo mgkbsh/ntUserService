@@ -1,5 +1,5 @@
 var env = process.env.NODE_ENV || 'development';
-if(env=="production") {
+if(env=='production') {
   require('newrelic')
 }
 const models = require('../models');
