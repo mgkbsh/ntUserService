@@ -5,8 +5,7 @@ const sequelize = require('sequelize');
 var axios = require('axios')
 var env = process.env.NODE_ENV || 'development';
 var config = require('../config/config.json')[env]
-var cacheURL = config.cache_service
-
+var cacheURL = config.user_cache
 module.exports.follow = async (req, res) => {
   try {
     res.status(200).send('success');

@@ -6,14 +6,16 @@
     "host": "localhost",
     "dialect": "postgres",
     "tweet_service": "http://localhost:4567/",
-    "cache_service": "http://localhost:2000/"
+    "cache_service": "http://localhost:2000/",
+    "user_cache": "http://localhost:7000/"
 
   },
   "production": {
     "use_env_variable": "DATABASE_URL",
     "dialect": "postgres",
     "tweet_service": "https://nttweets-tjak.herokuapp.com/",
-    "cache_service": "https://nt-cache.herokuapp.com/"
+    "cache_service": "https://nt-cache.herokuapp.com/",
+    "user_cache": "https://ucache.herokuapp.com/"
   },
   "test": {
     "username": "",
