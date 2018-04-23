@@ -6,6 +6,8 @@ var axios = require('axios')
 var env = process.env.NODE_ENV || 'development';
 var config = require('../config/config.json')[env]
 var cacheURL = config.user_cache
+var client=require('../config/redis.js')
+
 module.exports.follow = async (req, res) => {
   try {
     res.status(200).send('success');
@@ -16,6 +18,10 @@ module.exports.follow = async (req, res) => {
       followerId: follower,
       followeeId: followee
     });
+
+    // //deleting the
+    client.delAsync("userObj"+follower)
+    client.delAsync("userObj"+followee)
 
     var incFollowers = models.User.update(
       { numFollowers: sequelize.literal(`"Users"."numFollowers" + 1`) },
@@ -39,13 +45,18 @@ module.exports.unfollow = async (req, res) => {
     var follower = req.body.followerId;
     var followee = req.body.followeeId;
 
+
+
     var relationships = await models.Relationship.destroy({
        where: {
          followerId: follower,
          followeeId: followee
        }
     });
-
+    
+    client.delAsync("userObj"+follower)
+    client.delAsync("userObj"+followee)
+    
     if (relationships <= 0) {
       throw new Error("Non-existent relationship");
     }
@@ -76,31 +87,24 @@ module.exports.unfollow = async (req, res) => {
 // }
 module.exports.getUser = async (req, res) => {
   var id = req.body.id
-  console.log(id)
-  var userCacheKey="userObj"+id.toString();
+  var userCacheKey="userObj"+id.toString();  
   var getRequestURL=cacheURL+userCacheKey
   var postURL=cacheURL+'store/'+userCacheKey
   try {
-    var response=await axios.get(getRequestURL);
-    var result=JSON.parse(response.data)
+    var result=await client.getAsync(userCacheKey);
     if (result==null) {
-      // data doesnt exists, will need to get from db and set in cache
+
       var user = await models.User.findOne({
         where: { id: id },
         attributes: ['id', 'username', 'fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
       });
-      console.log(JSON.parse(JSON.stringify(user)))
+
+      client.setAsync(userCacheKey, JSON.stringify(user))
       res.json(JSON.parse(JSON.stringify(user)));
-      axios.post(postURL, {params: { cacheKey: userCacheKey, cacheData: JSON.stringify(user)}})
     } else {
-      console.log(result)
-
-
-      // data exists in cache, will get from cache
-      res.json(result);
+      res.json(JSON.parse(result));
     }
   } catch (err) {
-    // console.log(err)
     res.status(404).send(err);
   }
 };
