@@ -3,9 +3,7 @@ require('newrelic')
 const models = require('../models');
 const sequelize = require('sequelize');
 var axios = require('axios')
-var env = process.env.NODE_ENV || 'development';
-var config = require('../config/config.json')[env]
-var cacheURL = config.cache_service
+var client = require('../config/redis')
 
 module.exports.follow = async (req, res) => {
   try {
@@ -27,6 +25,9 @@ module.exports.follow = async (req, res) => {
         { where: { id: follower } });
 
     await sequelize.Promise.join(incFollowers, incFollowees)
+
+    client.del('userProfile:' + req.followerId)
+    client.del('userProfile:' + req.followeeId)
 
   } catch (err) {
 
@@ -61,6 +62,9 @@ module.exports.unfollow = async (req, res) => {
 
     await sequelize.Promise.join(decFollowers, decFollowees);
 
+    client.del('userProfile:' + req.followerId)
+    client.del('userProfile:' + req.followeeId)
+
   } catch (err) {
 
   }
@@ -76,33 +80,27 @@ module.exports.unfollow = async (req, res) => {
 //     "numTweets": 16
 // }
 module.exports.getUser = async (req, res) => {
-  var id = req.body.id
-  console.log(id)
-  var userCacheKey="userObj"+id.toString();
-  var getRequestURL=cacheURL+userCacheKey
-  var postURL=cacheURL+'store/'+userCacheKey
   try {
-    var response=await axios.get(getRequestURL);
-    var result=JSON.parse(response.data)
-    if (result==null) {
-      // data doesnt exists, will need to get from db and set in cache
-      var user = await models.User.findOne({
-        where: { id: id },
-        attributes: ['id', 'username', 'fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
-      });
-      console.log(JSON.parse(JSON.stringify(user)))
-      res.json(JSON.parse(JSON.stringify(user)));
-      axios.post(postURL, {params: { cacheKey: userCacheKey, cacheData: JSON.stringify(user)}})
-    } else {
-      console.log(result)
+    var id = req.body.id;
 
+    var user = await client.getAsync('userProfile:' + id)
 
-      // data exists in cache, will get from cache
-      res.json(result);
+    if (user) {
+      return res.json(JSON.parse(user))
     }
+
+    user = await models.User.findOne({
+      where: { id: id },
+      attributes: ['id', 'username', 'fname', 'lname', 'numFollowers', 'numFollowees', 'numTweets']
+    });
+
+    client.set('userProfile:' + id, JSON.stringify(user), 'EX', 60 * 60);
+
+    res.json(user);
+
   } catch (err) {
-    // console.log(err)
-    res.status(404).send(err);
+    console.log(err)
+    // res.status(404).send(err);
   }
 };
 
@@ -136,7 +134,7 @@ module.exports.getFollowers = async (req, res) => {
     res.json(JSON.parse(JSON.stringify(followers)));
 
   } catch (err) {
-    res.status(404).send(err);
+
   }
 
 }
@@ -171,7 +169,7 @@ module.exports.getFollowees = async (req, res) => {
     res.json(JSON.parse(JSON.stringify(followees)));
 
   } catch (err) {
-    res.status(404).send(err);
+
   }
 
 }
