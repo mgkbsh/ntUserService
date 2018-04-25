@@ -101,8 +101,7 @@ module.exports.getUser = async (req, res) => {
       res.json(result);
     }
   } catch (err) {
-    // console.log(err)
-    res.status(404).send(err);
+
   }
 };
 
@@ -136,7 +135,6 @@ module.exports.getFollowers = async (req, res) => {
     res.json(JSON.parse(JSON.stringify(followers)));
 
   } catch (err) {
-    res.status(404).send(err);
   }
 
 }
@@ -171,7 +169,6 @@ module.exports.getFollowees = async (req, res) => {
     res.json(JSON.parse(JSON.stringify(followees)));
 
   } catch (err) {
-    res.status(404).send(err);
   }
 
 }
