@@ -2,7 +2,6 @@ require('newrelic')
 
 const models = require('../models');
 const sequelize = require('sequelize');
-var axios = require('axios')
 var client = require('../config/redis')
 
 module.exports.follow = async (req, res) => {
